@@ -20,8 +20,10 @@ async def list_applications():
             (DEMO_USER_ID,)
         )
         rows = await cursor.fetchall()
-    apps = [
-        ApplicationBase(
+    apps = []
+    for _r in rows:
+        r = dict(_r)
+        apps.append(ApplicationBase(
             id=r["id"],
             mission_id=r["mission_id"],
             opportunity_id=r["opportunity_id"],
@@ -29,9 +31,7 @@ async def list_applications():
             submitted_at=r.get("submitted_at"),
             confirmation_number=r.get("confirmation_number"),
             created_at=r["created_at"],
-        )
-        for r in rows
-    ]
+        ))
     return ApplicationsResponse(count=len(apps), applications=apps)
 
 

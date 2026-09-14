@@ -22,8 +22,10 @@ async def list_notifications():
         )
         rows = await cursor.fetchall()
 
-    notifs = [
-        NotificationBase(
+    notifs = []
+    for _r in rows:
+        r = dict(_r)
+        notifs.append(NotificationBase(
             id=r["id"],
             mission_id=r.get("mission_id"),
             title=r["title"],
@@ -31,9 +33,7 @@ async def list_notifications():
             type=r["type"],
             read=bool(r["read"]),
             created_at=r["created_at"],
-        )
-        for r in rows
-    ]
+        ))
     unread = sum(1 for n in notifs if not n.read)
     return NotificationsResponse(count=len(notifs), unread_count=unread, notifications=notifs)
 

@@ -65,8 +65,10 @@ async def _row_to_mission_response(db, row: dict) -> MissionResponse:
         (row["id"],)
     )
     step_rows = await cursor.fetchall()
-    steps = [
-        MissionStep(
+    steps = []
+    for _s in step_rows:
+        s = dict(_s)
+        steps.append(MissionStep(
             id=s["id"],
             step_order=s["step_order"],
             name=s["name"],
@@ -75,9 +77,7 @@ async def _row_to_mission_response(db, row: dict) -> MissionResponse:
             started_at=s.get("started_at"),
             completed_at=s.get("completed_at"),
             result=json.loads(s.get("result") or "{}"),
-        )
-        for s in step_rows
-    ]
+        ))
     return MissionResponse(
         id=row["id"],
         user_id=row["user_id"],
@@ -365,15 +365,15 @@ async def get_mission_events(mission_id: str):
         )
         rows = await cursor.fetchall()
 
-    events = [
-        AgentEvent(
+    events = []
+    for _r in rows:
+        r = dict(_r)
+        events.append(AgentEvent(
             id=r["id"],
             mission_id=r["mission_id"],
             event_type=r["event_type"],
             message=r["message"],
             metadata=json.loads(r.get("metadata") or "{}"),
             created_at=r["created_at"],
-        )
-        for r in rows
-    ]
+        ))
     return AgentEventsResponse(mission_id=mission_id, count=len(events), events=events)
