@@ -1,0 +1,26 @@
+# Raahi AI — Backend Dependencies
+# Install with: pip install -r backend/requirements.txt
+
+# ── Core framework ─────────────────────────────────────────────────────────────
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+python-multipart==0.0.12
+
+# ── Strands Agents SDK (hackathon requirement) ─────────────────────────────────
+strands-agents==1.0.0
+strands-agents-tools==0.2.0
+
+# ── AWS / Bedrock (default model provider) ────────────────────────────────────
+boto3==1.35.80
+botocore==1.35.80
+
+# ── Database ───────────────────────────────────────────────────────────────────
+aiosqlite==0.20.0
+
+# ── Data validation ────────────────────────────────────────────────────────────
+pydantic==2.10.3
+pydantic-settings==2.6.1
+
+# ── Utilities ──────────────────────────────────────────────────────────────────
+python-dotenv==1.0.1
+httpx==0.28.1
