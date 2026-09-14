@@ -1,4 +1,4 @@
-"""
+﻿"""
 API routes — /api/opportunities
 GET /api/opportunities
 GET /api/opportunities/{id}
@@ -16,7 +16,7 @@ async def list_opportunities(
     category: str = Query(default="all", description="Filter by category"),
     keyword: str = Query(default="", description="Search keyword"),
 ):
-    async with await get_db() as db:
+    async with get_db() as db:
         if category != "all":
             cursor = await db.execute(
                 "SELECT * FROM opportunities WHERE category = ?", (category,)
@@ -46,7 +46,7 @@ async def list_opportunities(
 
 @router.get("/{opportunity_id}", response_model=OpportunityDetail)
 async def get_opportunity(opportunity_id: str):
-    async with await get_db() as db:
+    async with get_db() as db:
         cursor = await db.execute(
             "SELECT * FROM opportunities WHERE id = ?", (opportunity_id,)
         )

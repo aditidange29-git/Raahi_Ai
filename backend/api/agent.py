@@ -1,4 +1,4 @@
-"""
+﻿"""
 API routes — /api/agent
 GET  /api/agent/status   — current agent status, active missions, available tools
 POST /api/agent/run      — run a free-form agent query (not tied to a mission)
@@ -19,7 +19,7 @@ router = APIRouter(prefix="/api/agent", tags=["Agent"])
 
 @router.get("/status", response_model=AgentStatusResponse)
 async def agent_status():
-    async with await get_db() as db:
+    async with get_db() as db:
         cursor = await db.execute(
             "SELECT COUNT(*) as cnt FROM missions WHERE state NOT IN (?,?,?)",
             (MissionState.COMPLETED.value, MissionState.FAILED.value, MissionState.CANCELLED.value)

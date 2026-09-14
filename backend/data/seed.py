@@ -1,4 +1,4 @@
-"""
+﻿"""
 Seed data for Raahi AI demo.
 Includes: opportunities, user profile, and user documents.
 """
@@ -190,7 +190,7 @@ async def seed_database():
     """
     from backend.models.database import get_db
 
-    async with await get_db() as db:
+    async with get_db() as db:
         # Check if seed already exists
         cursor = await db.execute("SELECT COUNT(*) as cnt FROM users WHERE id = ?", ("user_demo",))
         row = await cursor.fetchone()

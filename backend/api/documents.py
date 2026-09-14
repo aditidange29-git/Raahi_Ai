@@ -1,4 +1,4 @@
-"""
+﻿"""
 API routes — /api/documents
 GET  /api/documents
 POST /api/documents
@@ -15,7 +15,7 @@ DEMO_USER_ID = "user_demo"
 
 @router.get("", response_model=DocumentsResponse)
 async def list_documents():
-    async with await get_db() as db:
+    async with get_db() as db:
         cursor = await db.execute(
             "SELECT * FROM documents WHERE user_id = ? ORDER BY name", (DEMO_USER_ID,)
         )
@@ -36,7 +36,7 @@ async def list_documents():
 async def add_document(body: DocumentCreate):
     doc_id = f"doc_{uuid.uuid4().hex[:8]}"
     today = datetime.utcnow().strftime("%Y-%m-%d")
-    async with await get_db() as db:
+    async with get_db() as db:
         # Prevent duplicates by name
         cursor = await db.execute(
             "SELECT id FROM documents WHERE user_id = ? AND name = ?",

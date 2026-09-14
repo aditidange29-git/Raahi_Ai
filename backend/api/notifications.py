@@ -1,4 +1,4 @@
-"""
+﻿"""
 API routes — /api/notifications
 GET  /api/notifications
 POST /api/notifications/{id}/read
@@ -15,7 +15,7 @@ DEMO_USER_ID = "user_demo"
 
 @router.get("", response_model=NotificationsResponse)
 async def list_notifications():
-    async with await get_db() as db:
+    async with get_db() as db:
         cursor = await db.execute(
             "SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50",
             (DEMO_USER_ID,)
@@ -40,7 +40,7 @@ async def list_notifications():
 
 @router.post("/{notification_id}/read")
 async def mark_notification_read(notification_id: str):
-    async with await get_db() as db:
+    async with get_db() as db:
         cursor = await db.execute(
             "SELECT id FROM notifications WHERE id = ? AND user_id = ?",
             (notification_id, DEMO_USER_ID)

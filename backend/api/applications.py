@@ -1,4 +1,4 @@
-"""
+﻿"""
 API routes — /api/applications
 GET /api/applications
 GET /api/applications/{id}
@@ -14,7 +14,7 @@ DEMO_USER_ID = "user_demo"
 
 @router.get("", response_model=ApplicationsResponse)
 async def list_applications():
-    async with await get_db() as db:
+    async with get_db() as db:
         cursor = await db.execute(
             "SELECT * FROM applications WHERE user_id = ? ORDER BY created_at DESC",
             (DEMO_USER_ID,)
@@ -37,7 +37,7 @@ async def list_applications():
 
 @router.get("/{application_id}", response_model=ApplicationDetail)
 async def get_application(application_id: str):
-    async with await get_db() as db:
+    async with get_db() as db:
         cursor = await db.execute(
             "SELECT * FROM applications WHERE id = ?", (application_id,)
         )
