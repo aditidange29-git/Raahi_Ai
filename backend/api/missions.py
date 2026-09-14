@@ -139,7 +139,7 @@ async def _run_agent_mission(mission_id: str, opportunity_id: str, goal: str):
             output_chunks.append(kwargs["data"])
 
     try:
-        async with await _get_db() as db:
+        async with _get_db() as db:
             await _update_state(db, MissionState.DISCOVERING)
             await _emit_event(db, "mission_started", f"Agent started mission for opportunity {opportunity_id}")
 
@@ -148,18 +148,14 @@ async def _run_agent_mission(mission_id: str, opportunity_id: str, goal: str):
         loop = asyncio.get_event_loop()
 
         def _invoke():
-            agent_with_cb = type(agent)(
-                model=agent.model,
-                system_prompt=agent.system_prompt,
-                tools=agent.tools,
-                callback_handler=sync_callback,
-            )
-            return agent_with_cb(prompt)
+            from backend.agent.raahi_agent import create_agent
+            per_request_agent = create_agent(callback_handler=sync_callback)
+            return per_request_agent(prompt)
 
         result = await loop.run_in_executor(None, _invoke)
         full_output = "".join(output_chunks)
 
-        async with await _get_db() as db:
+        async with _get_db() as db:
             # Check if paused for approval
             approval_store = get_approval_store()
             approval = approval_store.get(mission_id)
@@ -188,7 +184,7 @@ async def _run_agent_mission(mission_id: str, opportunity_id: str, goal: str):
 
     except Exception as exc:
         logger.exception("Agent mission failed: %s", exc)
-        async with await _get_db() as db:
+        async with _get_db() as db:
             await _update_state(db, MissionState.FAILED)
             await _emit_event(db, "mission_failed", f"Error: {str(exc)[:300]}")
 
@@ -200,7 +196,7 @@ async def create_mission(body: MissionCreate, background_tasks: BackgroundTasks)
     now = datetime.utcnow().isoformat() + "Z"
     mission_id = f"msn_{uuid.uuid4().hex[:10]}"
 
-    async with await get_db() as db:
+    async with get_db() as db:
         # Verify opportunity exists
         cursor = await db.execute("SELECT * FROM opportunities WHERE id = ?", (body.opportunity_id,))
         opp = await cursor.fetchone()
@@ -232,7 +228,7 @@ async def create_mission(body: MissionCreate, background_tasks: BackgroundTasks)
 
 @router.get("", response_model=MissionsResponse)
 async def list_missions():
-    async with await get_db() as db:
+    async with get_db() as db:
         cursor = await db.execute(
             "SELECT * FROM missions WHERE user_id = ? ORDER BY created_at DESC",
             (DEMO_USER_ID,)
@@ -244,7 +240,7 @@ async def list_missions():
 
 @router.get("/{mission_id}", response_model=MissionResponse)
 async def get_mission(mission_id: str):
-    async with await get_db() as db:
+    async with get_db() as db:
         cursor = await db.execute("SELECT * FROM missions WHERE id = ?", (mission_id,))
         row = await cursor.fetchone()
         if not row:
@@ -256,7 +252,7 @@ async def get_mission(mission_id: str):
 async def approve_mission(mission_id: str, body: ApprovalAction, background_tasks: BackgroundTasks):
     now = datetime.utcnow().isoformat() + "Z"
 
-    async with await get_db() as db:
+    async with get_db() as db:
         cursor = await db.execute("SELECT * FROM missions WHERE id = ?", (mission_id,))
         row = await cursor.fetchone()
         if not row:
@@ -338,7 +334,7 @@ async def approve_mission(mission_id: str, body: ApprovalAction, background_task
 @router.post("/{mission_id}/cancel")
 async def cancel_mission(mission_id: str):
     now = datetime.utcnow().isoformat() + "Z"
-    async with await get_db() as db:
+    async with get_db() as db:
         cursor = await db.execute("SELECT * FROM missions WHERE id = ?", (mission_id,))
         row = await cursor.fetchone()
         if not row:
@@ -359,7 +355,7 @@ async def cancel_mission(mission_id: str):
 
 @router.get("/{mission_id}/events", response_model=AgentEventsResponse)
 async def get_mission_events(mission_id: str):
-    async with await get_db() as db:
+    async with get_db() as db:
         cursor = await db.execute("SELECT * FROM missions WHERE id = ?", (mission_id,))
         if not await cursor.fetchone():
             raise HTTPException(status_code=404, detail=f"Mission '{mission_id}' not found.")

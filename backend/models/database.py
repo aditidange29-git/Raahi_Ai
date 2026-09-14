@@ -170,18 +170,38 @@ CREATE_TABLES_SQL = [
 ]
 
 
-async def get_db() -> aiosqlite.Connection:
-    """Open (or reuse) the SQLite connection. Call .close() when done."""
-    db = await aiosqlite.connect(DB_PATH)
-    db.row_factory = aiosqlite.Row
-    await db.execute("PRAGMA journal_mode=WAL")
-    await db.execute("PRAGMA foreign_keys=ON")
-    return db
+def get_db() -> aiosqlite.Connection:
+    """Return an aiosqlite async context manager.
+    
+    Usage:
+        async with get_db() as db:
+            await db.execute(...)
+    """
+    conn = aiosqlite.connect(DB_PATH)
+    # We patch row_factory via a wrapper because aiosqlite.connect returns
+    # a Connection object whose row_factory must be set after __aenter__.
+    return _RowFactoryWrapper(conn)
+
+
+class _RowFactoryWrapper:
+    """Thin wrapper that sets row_factory=aiosqlite.Row after connection opens."""
+    def __init__(self, conn):
+        self._conn = conn
+
+    async def __aenter__(self):
+        db: aiosqlite.Connection = await self._conn.__aenter__()
+        db.row_factory = aiosqlite.Row
+        await db.execute("PRAGMA journal_mode=WAL")
+        await db.execute("PRAGMA foreign_keys=ON")
+        return db
+
+    async def __aexit__(self, *args):
+        return await self._conn.__aexit__(*args)
 
 
 async def init_db() -> None:
     """Create all tables if they do not exist and seed demo data."""
-    async with await get_db() as db:
+    async with get_db() as db:
         for sql in CREATE_TABLES_SQL:
             await db.execute(sql)
         await db.commit()
